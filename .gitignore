@@ -3,4 +3,4 @@ dist
 build
 coverage
 .env
-/generated/prisma
+/src/generated/prisma
