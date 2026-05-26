@@ -10,6 +10,7 @@ export const createAuthRouter = (): Router => {
 
     authRouter.post('/register', validate(registerSchema), asyncHandler(authController.register));
     authRouter.post('/login', validate(loginSchema), asyncHandler(authController.login));
+    authRouter.post('/refresh', asyncHandler(authController.refresh));
 
     return authRouter;
 }

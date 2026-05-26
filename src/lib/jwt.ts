@@ -2,6 +2,7 @@ import jwt, { SignOptions } from "jsonwebtoken";
 
 interface JwtPayload {
     userId: string;
+    tokenVersion: number;
 }
 
 const getJwtSecret = (): string => {
