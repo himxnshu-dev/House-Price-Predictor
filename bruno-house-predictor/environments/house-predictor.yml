@@ -1,0 +1,6 @@
+name: house-predictor
+variables:
+  - secret: true
+    name: access_token
+  - secret: true
+    name: refresh_token
