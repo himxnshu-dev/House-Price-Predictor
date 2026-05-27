@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String              @id @default(uuid())
+  name         String
+  email        String              @unique
+  passwordHash String
+  tokenVersion Int                 @default(0)
+  predictions  PredictionHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PredictionHistory {
+  id     String @id @default(uuid())
+  userId String
+
+  // input data
+  location   String
+  bhk        Float
+  bath       Float
+  total_sqft Float
+
+  // output data
+  predictedPrice Float
+
+  isFavorite Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  // relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // indexing on userId for faster queries
+  @@index([userId, createdAt(sort: Desc)])
+}

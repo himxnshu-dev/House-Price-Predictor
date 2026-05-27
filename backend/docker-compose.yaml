@@ -1,0 +1,20 @@
+services:
+  house-price-project-db:
+    image: postgres:17-alpine
+    container_name: house-price-predictor-db
+    environment:
+      POSTGRES_USER: ${DB_USER:-house_price_predictor}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-house_price_predictor_password}
+      POSTGRES_DB: ${DB_NAME:-house_price_predictor_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - house-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-house_price_predictor} -d ${DB_NAME:-house_price_predictor_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  house-db-data:

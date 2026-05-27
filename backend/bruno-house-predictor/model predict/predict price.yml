@@ -1,0 +1,26 @@
+info:
+  name: predict price
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:8080/api/predict
+  body:
+    type: json
+    data: |-
+      {
+        "location": "Model Town Bengaluru",
+        "bhk": 2,
+        "bath": 4,
+        "total_sqft": 1500
+      }
+  auth:
+    type: bearer
+    token: "{{access_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

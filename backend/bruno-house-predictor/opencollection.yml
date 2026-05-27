@@ -1,0 +1,49 @@
+opencollection: 1.0.0
+
+info:
+  name: bruno-house-predictor
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.getStatus() === 200) {
+            const data = res.getBody();
+            
+            const accessToken = data.accessToken; 
+            const refreshToken = data.refreshToken;
+
+            if (accessToken) {
+                bru.setEnvVar("access_token", accessToken);
+                console.log("access token updated successfully!");
+            } 
+            if (refreshToken) {
+                bru.setEnvVar("refresh_token", refreshToken);
+                console.log("refresh token updated successfully!");
+            }
+          
+            if (!accessToken || !refreshToken) {
+                console.error("Token not found in response body");
+            }
+        }
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
+    presets:
+      request:
+        type: http
+        url: http://localhost:8080/api/
