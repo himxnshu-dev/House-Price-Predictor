@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bengaluru House Price Prediction</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <div class="glass-container">
+        <div class="card-header">
+            <h3>Bengaluru House Price Predictor</h3>
+        </div>
+
+        <form method="post" accept-charset="utf-8" name="Modelform" class="needs-validation" novalidate>
+            <div class="mb-3">
+                <label for="location" class="form-label">Location</label>
+                <select class="form-select" id="location" name="location" required>
+                    <option value="" disabled selected>Select Location</option>
+                    {% for location in locations %}
+                    <option value="{{ location }}">{{ location }}</option>
+                    {% endfor %}
+                </select>
+                <div class="invalid-feedback">Please select a location.</div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="bhk" class="form-label">BHK</label>
+                    <input type="number" class="form-control" id="bhk" name="bhk" placeholder="e.g., 2" required min="1"
+                        max="20" step="1">
+                    <div class="invalid-feedback">Enter valid BHK (1-20).</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="bath" class="form-label">Bathrooms</label>
+                    <input type="number" class="form-control" id="bath" name="bath" placeholder="e.g., 2" required
+                        min="1" max="20" step="1">
+                    <div class="invalid-feedback">Enter valid Bathrooms (1-20).</div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="total_sqft" class="form-label">Total Sqft</label>
+                <input type="number" class="form-control" id="total_sqft" name="total_sqft" placeholder="e.g., 1500"
+                    required min="300" max="50000" step="any">
+                <div class="invalid-feedback">Total Sqft must be at least 300.</div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-primary btn-lg" onclick="handlePredict()" id="predictButton">
+                    Predict Price
+                </button>
+            </div>
+        </form>
+
+        <div id="prediction" class="result-box alert w-100 d-block" style="display:none;"></div>
+    </div>
+
+    <script>
+        function handlePredict() {
+            const form = document.querySelector('.needs-validation');
+            form.classList.add('was-validated');
+
+            if (form.checkValidity()) {
+                send_data();
+            }
+        }
+
+        function send_data() {
+            var form = document.querySelector('form');
+            var formData = new FormData(form);
+            var xhr = new XMLHttpRequest();
+            var predictionElement = document.getElementById("prediction");
+            var btn = document.getElementById('predictButton');
+
+            xhr.open('POST', '/predict', true);
+
+            // Loading State
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Computing...';
+            btn.disabled = true;
+            predictionElement.style.display = 'none';
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == XMLHttpRequest.DONE) {
+                    btn.innerHTML = 'Predict Price';
+                    btn.disabled = false;
+
+                    predictionElement.style.display = 'block';
+
+                    if (xhr.status === 200) {
+                        if (xhr.responseText.startsWith("Error")) {
+                            predictionElement.className = "result-box alert alert-danger w-100 d-block";
+                            predictionElement.innerText = xhr.responseText;
+                        } else {
+                            predictionElement.className = "result-box alert alert-info w-100 d-block";
+                            predictionElement.innerHTML = "Estimated Price: " + xhr.responseText;
+                        }
+                    } else {
+                        predictionElement.className = "result-box alert alert-danger w-100 d-block";
+                        predictionElement.innerText = "Server Error. Please try again.";
+                    }
+                }
+            };
+            xhr.onload = function () { };
+            xhr.send(formData);
+        }
+    </script>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
