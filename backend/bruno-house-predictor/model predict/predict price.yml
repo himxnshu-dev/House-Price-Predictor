@@ -10,10 +10,10 @@ http:
     type: json
     data: |-
       {
-        "location": "Model Town Bengaluru",
+        "location": "Electronic City Phase II",
         "bhk": 2,
         "bath": 4,
-        "total_sqft": 1500
+        "total_sqft": 2500
       }
   auth:
     type: bearer

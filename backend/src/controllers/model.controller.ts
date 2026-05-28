@@ -8,6 +8,8 @@ interface AuthRequest extends Request {
     user?: { userId: string }
 }
 
+let cachedLocations: string[] | null = null;
+
 export class ModelController {
     public predict = async (req: AuthRequest, res: Response): Promise<void> => {
         const userId = req.user?.userId;
@@ -60,6 +62,34 @@ export class ModelController {
         });
 
         res.status(200).json({ success: true, price_lakhs: predictedPrice });
+    }
+
+    public getLocations = async (_req: AuthRequest, res: Response): Promise<void> => {
+        if (cachedLocations) {
+            res.status(200).json({ success: true, locations: cachedLocations });
+            return;
+        }
+
+        const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || 'http://localhost:5001';
+        try {
+            const response = await axios.get(`${PYTHON_SERVICE_URL}/locations`);
+
+            if (response.data && response.data.success && Array.isArray(response.data.locations)) {
+                cachedLocations = response.data.locations;
+                res.status(200).json({
+                    success: true,
+                    locations: cachedLocations
+                });
+            } else {
+                throw new Error("Invalid response format from ML Service for locations");
+            }
+        } catch (error) {
+            logger.error({ error }, "Failed to fetch locations from Python ML Service");
+            res.status(503).json({
+                success: false,
+                error: "Location data is temporarily unavailable."
+            });
+        }
     }
 
     public getHistory = async (req: AuthRequest, res: Response): Promise<void> => {
