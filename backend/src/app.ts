@@ -7,7 +7,7 @@ export const createApp = (): Application => {
     const app = express()
 
     const corsOptions = {
-        origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+        origin: process.env.CORS_ORIGIN || 'http://localhost:5174',
         methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true,
