@@ -12,6 +12,18 @@ try:
 except Exception as e:
     print(f"Startup Error: Ensure Cleaned_data.csv and RidgeModel.pkl exist. Details: {e}")
 
+@app.route('/locations', methods=['GET'])
+def get_locations():
+    try:
+        # Get unique, sorted locations as a standard Python list
+        locations = sorted(df['location'].unique().tolist())
+        return jsonify({
+            "success": True,
+            "locations": locations
+        }), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
