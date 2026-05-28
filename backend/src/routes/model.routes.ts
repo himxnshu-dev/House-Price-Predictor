@@ -17,5 +17,10 @@ export const createModelRouter = (): Router => {
         asyncHandler(modelController.predict)
     );
 
+    modelRouter.get('/history', asyncHandler(modelController.getHistory));
+
+    modelRouter.patch('/:id/favorite', asyncHandler(modelController.toggleFavorite));
+    modelRouter.get('/favorites', asyncHandler(modelController.getFavorites));
+
     return modelRouter;
 }
