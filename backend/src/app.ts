@@ -6,7 +6,13 @@ import { logger } from './utils/logger.js';
 export const createApp = (): Application => {
     const app = express()
 
-    app.use(cors());
+    const corsOptions = {
+        origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+        methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+        credentials: true,
+    };
+    app.use(cors(corsOptions));
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
