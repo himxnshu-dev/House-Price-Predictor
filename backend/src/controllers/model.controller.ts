@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-// import { prisma } from "../lib/prisma.js";
 import axios from "axios";
 import { logger } from "../utils/logger.js";
 import { prisma } from "../lib/prisma.js";
+import { PaginationQuery, paginationSchema } from "../validations/pagination.js";
 
 interface AuthRequest extends Request {
     user?: { userId: string }
@@ -60,5 +60,94 @@ export class ModelController {
         });
 
         res.status(200).json({ success: true, price_lakhs: predictedPrice });
+    }
+
+    public getHistory = async (req: AuthRequest, res: Response): Promise<void> => {
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+
+        const queryValidation = paginationSchema.safeParse(req.query);
+        if (!queryValidation.success) {
+            res.status(400).json({ success: false, error: "Invalid pagination parameters" });
+            return;
+        }
+        const { page, limit }: PaginationQuery = queryValidation.data;
+        const skip = (page - 1) * limit;
+
+        const [total, history] = await prisma.$transaction([
+            prisma.predictionHistory.count({
+                where: { userId }
+            }),
+            prisma.predictionHistory.findMany({
+                where: { userId },
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limit
+            })
+        ])
+        if (history.length === 0) {
+            res.status(200).json({ success: true, history: [], message: "No prediction history found" });
+            return;
+        }
+
+        res.status(200).json({
+            success: true,
+            history,
+            meta: {
+                totalRecords: total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        })
+    }
+
+    public toggleFavorite = async (req: AuthRequest, res: Response): Promise<void> => {
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+
+        const predictionId = req.params.id;
+
+        const prediction = await prisma.predictionHistory.findFirst({
+            where: { id: predictionId as string, userId }
+        });
+        if (!prediction) {
+            res.status(404).json({ success: false, error: "Prediction not found" });
+            return;
+        }
+
+        const addToFavorites = await prisma.predictionHistory.update({
+            where: { id: predictionId as string },
+            data: { isFavorite: !prediction.isFavorite }
+        })
+        res.status(200).json({
+            success: true,
+            message: addToFavorites.isFavorite ? "Added to favorites" : "Removed from favorites",
+        });
+    }
+
+    public getFavorites = async (req: AuthRequest, res: Response): Promise<void> => {
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+
+        const favorites = await prisma.predictionHistory.findMany({
+            where: { userId, isFavorite: true },
+            orderBy: { createdAt: 'desc' }
+        });
+        if (favorites.length === 0) {
+            res.status(200).json({ success: true, favorites: [], message: "No favorites found" });
+            return;
+        }
+
+        res.status(200).json({ success: true, favorites });
     }
 }

@@ -1,0 +1,21 @@
+info:
+  name: toggle favorites
+  type: http
+  seq: 3
+
+http:
+  method: PATCH
+  url: http://localhost:8080/api/:id/favorite
+  params:
+    - name: id
+      value: ""
+      type: path
+  auth:
+    type: bearer
+    token: "{{access_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
